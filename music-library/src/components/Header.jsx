@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-function Header({ searchTerm, onSearchChange }) {
+function Header({ searchTerm, onSearchChange, isFetching }) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
@@ -55,6 +55,13 @@ function Header({ searchTerm, onSearchChange }) {
         <div className="flex items-center gap-3 shrink-0 max-md:ml-auto">
         </div>
       </div>
+
+      {/* Fetch progress bar */}
+      {isFetching && (
+        <div className="h-0.5 w-full overflow-hidden">
+          <div className="h-full w-1/3 bg-gradient-to-r from-violet-500 to-cyan-500 animate-[shimmer_1s_ease-in-out_infinite] rounded-full" />
+        </div>
+      )}
     </header>
   );
 }

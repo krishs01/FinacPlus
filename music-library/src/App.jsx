@@ -1,105 +1,121 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Header from './components/Header';
 import SongCard from './components/SongCard';
+import LoadingSkeleton from './components/LoadingSkeleton';
+import ErrorState from './components/ErrorState';
+import { useSongsQuery } from './hooks/useSongsQuery';
 
-// Dummy data for Stage 1 — replaced with real iTunes API data in Stage 2
-const DUMMY_SONGS = [
-  {
-    id: '1',
-    title: 'Yellow',
-    artist: 'Coldplay',
-    album: 'Parachutes',
-    year: 2000,
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f5/93/8c/f5938c49-964c-31d1-4b33-78b634f71fb7/190295978075.jpg/200x200bb.jpg',
-  },
-  {
-    id: '2',
-    title: 'Blinding Lights',
-    artist: 'The Weeknd',
-    album: 'After Hours',
-    year: 2020,
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/4d/e0/e1/4de0e176-2495-c640-2a28-a53dd3304ef4/20UMGIM12176.rgb.jpg/200x200bb.jpg',
-  },
-  {
-    id: '3',
-    title: 'Bohemian Rhapsody',
-    artist: 'Queen',
-    album: 'A Night at the Opera',
-    year: 1975,
-    artwork: null,
-  },
-  {
-    id: '4',
-    title: 'Shape of You',
-    artist: 'Ed Sheeran',
-    album: '÷ (Divide)',
-    year: 2017,
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/47/51/d0/4751d09a-40ef-b498-3ad1-0ae46d51a66a/190295851286.jpg/200x200bb.jpg',
-  },
-  {
-    id: '5',
-    title: 'Starboy',
-    artist: 'The Weeknd',
-    album: 'Starboy',
-    year: 2016,
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/57/56/d4/5756d408-3a8c-ee82-aa5a-e3a21bade0f3/16UMGIM64954.rgb.jpg/200x200bb.jpg',
-  },
-  {
-    id: '6',
-    title: 'Fix You',
-    artist: 'Coldplay',
-    album: 'X&Y',
-    year: 2005,
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/b6/2f/cb/b62fcb8b-6542-9a88-a3e3-9f95082c8002/190295939717.jpg/200x200bb.jpg',
-  },
-];
+// Create a single QueryClient instance outside the component
+// so it's not recreated on every render
+const queryClient = new QueryClient();
 
-function App() {
+/**
+ * Inner app component — needs to be inside QueryClientProvider
+ * so it can use the useSongsQuery hook.
+ */
+function MusicLibraryContent() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [submittedTerm, setSubmittedTerm] = useState('coldplay'); // default search
 
-  // Simple client-side filter on dummy data (real filtering via React Query in Stage 2)
-  const displayedSongs = DUMMY_SONGS.filter((song) =>
-    [song.title, song.artist, song.album]
-      .join(' ')
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+  const { songs, isLoading, isFetching, isError, error, refetch } = useSongsQuery(submittedTerm);
+
+  // Debounced search: submit after user stops typing for 600ms
+  const [debounceTimer, setDebounceTimer] = useState(null);
+
+  const handleSearchChange = useCallback((value) => {
+    setSearchTerm(value);
+
+    // Clear previous timer
+    if (debounceTimer) clearTimeout(debounceTimer);
+
+    // Set a new debounce timer
+    const timer = setTimeout(() => {
+      setSubmittedTerm(value);
+    }, 600);
+    setDebounceTimer(timer);
+  }, [debounceTimer]);
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+      <Header
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        isFetching={isFetching}
+      />
 
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 pb-16 pt-6 max-md:px-4 max-md:pb-12">
-        {/* Results info */}
+        {/* Results info bar */}
         <div className="flex items-center justify-between mb-6 px-1 animate-fade-in">
           <p className="text-sm text-slate-400 font-medium">
-            {displayedSongs.length} {displayedSongs.length === 1 ? 'song' : 'songs'}
-            {searchTerm && (
-              <span className="text-violet-400 italic"> matching &quot;{searchTerm}&quot;</span>
+            {isLoading ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
+                Searching...
+              </span>
+            ) : (
+              <>
+                {songs.length} {songs.length === 1 ? 'song' : 'songs'}
+                {submittedTerm && (
+                  <span className="text-violet-400 italic"> matching &quot;{submittedTerm}&quot;</span>
+                )}
+              </>
             )}
           </p>
+          {isFetching && !isLoading && (
+            <span className="text-xs text-slate-500 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+              Refreshing
+            </span>
+          )}
         </div>
 
-        {/* Song Grid */}
-        {displayedSongs.length > 0 ? (
+        {/* Loading State */}
+        {isLoading && <LoadingSkeleton count={6} />}
+
+        {/* Error State */}
+        {isError && !isLoading && (
+          <ErrorState error={error} onRetry={refetch} />
+        )}
+
+        {/* Song Grid — shown when we have data and no error */}
+        {!isLoading && !isError && songs.length > 0 && (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5 stagger-children max-md:grid-cols-1">
-            {displayedSongs.map((song) => (
+            {songs.map((song) => (
               <SongCard key={song.id} song={song} />
             ))}
           </div>
-        ) : (
+        )}
+
+        {/* Empty State — no results or no search yet */}
+        {!isLoading && !isError && songs.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-4 py-16 px-8 text-center animate-fade-in">
-            <div className="text-5xl leading-none mb-2">🔍</div>
-            <h2 className="text-xl font-semibold text-slate-100">No songs found</h2>
+            <div className="text-5xl leading-none mb-2">
+              {submittedTerm ? '🔍' : '🎵'}
+            </div>
+            <h2 className="text-xl font-semibold text-slate-100">
+              {submittedTerm ? 'No songs found' : 'Discover Music'}
+            </h2>
             <p className="text-sm text-slate-400 max-w-[400px] leading-relaxed">
-              {searchTerm
-                ? `No results for "${searchTerm}". Try a different search term.`
-                : 'Start by searching for your favorite artist or song.'}
+              {submittedTerm
+                ? `No results for "${submittedTerm}". Try a different search term.`
+                : 'Search for your favorite artist, album, or song to get started.'}
             </p>
           </div>
         )}
       </main>
     </div>
+  );
+}
+
+/**
+ * App root — wraps everything in QueryClientProvider.
+ */
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <MusicLibraryContent />
+    </QueryClientProvider>
   );
 }
 
