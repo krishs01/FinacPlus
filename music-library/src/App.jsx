@@ -6,23 +6,28 @@ import SongGroup from './components/SongGroup';
 import Toolbar from './components/Toolbar';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import ErrorState from './components/ErrorState';
+import AddSongForm from './components/AddSongForm';
 import { useSongsQuery } from './hooks/useSongsQuery';
+import { useLocalSongsQuery } from './hooks/useLocalSongsQuery';
+import { useDeleteSong } from './hooks/useDeleteSong';
 import { useSongFilters } from './hooks/useSongFilters';
 
-// Create a single QueryClient instance outside the component
 const queryClient = new QueryClient();
 
-/**
- * Inner app component — needs to be inside QueryClientProvider
- * so it can use the useSongsQuery hook.
- */
 function MusicLibraryContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [submittedTerm, setSubmittedTerm] = useState('coldplay');
+  const [showAddForm, setShowAddForm] = useState(false);
 
-  const { songs, isLoading, isFetching, isError, error, refetch } = useSongsQuery(submittedTerm);
+  // Fetch songs from iTunes + local MSW endpoint
+  const { songs: itunesSongs, isLoading, isFetching, isError, error, refetch } = useSongsQuery(submittedTerm);
+  const { localSongs } = useLocalSongsQuery();
+  const deleteSongMutation = useDeleteSong();
 
-  // Client-side filter, sort, and group-by — applied on top of React Query data
+  // Merge iTunes results + locally-added songs into a single list
+  const allSongs = [...localSongs, ...itunesSongs];
+
+  // Client-side filter, sort, and group-by
   const {
     processedSongs,
     groupedSongs,
@@ -35,11 +40,10 @@ function MusicLibraryContent() {
     setSortDir,
     groupKey,
     setGroupKey,
-  } = useSongFilters(songs);
+  } = useSongFilters(allSongs);
 
-  // Debounced search: submit after user stops typing for 600ms
+  // Debounced search
   const [debounceTimer, setDebounceTimer] = useState(null);
-
   const handleSearchChange = useCallback((value) => {
     setSearchTerm(value);
     if (debounceTimer) clearTimeout(debounceTimer);
@@ -49,9 +53,14 @@ function MusicLibraryContent() {
     setDebounceTimer(timer);
   }, [debounceTimer]);
 
-  // Decide what to render for the song list
+  const handleDeleteSong = (songId) => {
+    deleteSongMutation.mutate(songId);
+  };
+
+  // canDelete is true for now — will be gated by admin role in Stage 5
+  const canDelete = true;
+
   const renderSongList = () => {
-    // Grouped view — render SongGroup sections
     if (groupedSongs) {
       const entries = Object.entries(groupedSongs);
       return (
@@ -62,17 +71,18 @@ function MusicLibraryContent() {
               label={label}
               songs={groupSongs}
               index={index}
+              onDelete={handleDeleteSong}
+              canDelete={canDelete}
             />
           ))}
         </div>
       );
     }
 
-    // Flat view — render the song grid directly
     return (
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5 stagger-children max-md:grid-cols-1">
         {processedSongs.map((song) => (
-          <SongCard key={song.id} song={song} />
+          <SongCard key={song.id} song={song} onDelete={handleDeleteSong} canDelete={canDelete} />
         ))}
       </div>
     );
@@ -87,7 +97,7 @@ function MusicLibraryContent() {
       />
 
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 pb-16 pt-6 max-md:px-4 max-md:pb-12">
-        {/* Results info bar */}
+        {/* Results info bar + Add Song button */}
         <div className="flex items-center justify-between mb-4 px-1 animate-fade-in">
           <p className="text-sm text-slate-400 font-medium">
             {isLoading ? (
@@ -97,23 +107,36 @@ function MusicLibraryContent() {
               </span>
             ) : (
               <>
-                {songs.length} {songs.length === 1 ? 'song' : 'songs'}
+                {allSongs.length} {allSongs.length === 1 ? 'song' : 'songs'}
                 {submittedTerm && (
                   <span className="text-violet-400 italic"> matching &quot;{submittedTerm}&quot;</span>
+                )}
+                {localSongs.length > 0 && (
+                  <span className="text-cyan-400"> ({localSongs.length} local)</span>
                 )}
               </>
             )}
           </p>
-          {isFetching && !isLoading && (
-            <span className="text-xs text-slate-500 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-              Refreshing
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {isFetching && !isLoading && (
+              <span className="text-xs text-slate-500 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+                Refreshing
+              </span>
+            )}
+            {/* Add Song button — will be gated by admin role in Stage 5 */}
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-cyan-500 text-white text-sm font-semibold shadow-[0_2px_10px_rgba(139,92,246,0.3)] transition-all hover:shadow-[0_4px_20px_rgba(139,92,246,0.3)] hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-1.5"
+            >
+              <span className="text-base leading-none">+</span>
+              Add Song
+            </button>
+          </div>
         </div>
 
-        {/* Toolbar — only show when we have songs to work with */}
-        {!isLoading && !isError && songs.length > 0 && (
+        {/* Toolbar */}
+        {!isLoading && !isError && allSongs.length > 0 && (
           <Toolbar
             filterText={filterText}
             onFilterChange={setFilterText}
@@ -123,24 +146,24 @@ function MusicLibraryContent() {
             onSortDirChange={setSortDir}
             groupKey={groupKey}
             onGroupKeyChange={setGroupKey}
-            totalCount={songs.length}
+            totalCount={allSongs.length}
             filteredCount={filteredCount}
           />
         )}
 
-        {/* Loading State */}
+        {/* Loading */}
         {isLoading && <LoadingSkeleton count={6} />}
 
-        {/* Error State */}
+        {/* Error */}
         {isError && !isLoading && (
           <ErrorState error={error} onRetry={refetch} />
         )}
 
-        {/* Song List — flat grid or grouped sections */}
+        {/* Song List */}
         {!isLoading && !isError && processedSongs.length > 0 && renderSongList()}
 
-        {/* Empty State — no results after filtering, or no search yet */}
-        {!isLoading && !isError && songs.length > 0 && processedSongs.length === 0 && (
+        {/* No filter matches */}
+        {!isLoading && !isError && allSongs.length > 0 && processedSongs.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-4 py-16 px-8 text-center animate-fade-in">
             <div className="text-5xl leading-none mb-2">🔍</div>
             <h2 className="text-xl font-semibold text-slate-100">No matches</h2>
@@ -150,8 +173,8 @@ function MusicLibraryContent() {
           </div>
         )}
 
-        {/* Empty State — no API results at all */}
-        {!isLoading && !isError && songs.length === 0 && (
+        {/* No API results */}
+        {!isLoading && !isError && allSongs.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-4 py-16 px-8 text-center animate-fade-in">
             <div className="text-5xl leading-none mb-2">
               {submittedTerm ? '🔍' : '🎵'}
@@ -167,13 +190,13 @@ function MusicLibraryContent() {
           </div>
         )}
       </main>
+
+      {/* Add Song Modal */}
+      <AddSongForm isOpen={showAddForm} onClose={() => setShowAddForm(false)} />
     </div>
   );
 }
 
-/**
- * App root — wraps everything in QueryClientProvider.
- */
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
