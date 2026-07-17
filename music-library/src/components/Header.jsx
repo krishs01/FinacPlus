@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-function Header({ searchTerm, onSearchChange, isFetching }) {
+function Header({ searchTerm, onSearchChange, isFetching, user, onLoginClick, onLogout }) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
@@ -51,8 +51,37 @@ function Header({ searchTerm, onSearchChange, isFetching }) {
           )}
         </div>
 
-        {/* Right side — auth controls added in Stage 5 */}
+        {/* Auth controls */}
         <div className="flex items-center gap-3 shrink-0 max-md:ml-auto">
+          {user ? (
+            <>
+              {/* User avatar + info */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white">
+                  {user.name.charAt(0)}
+                </div>
+                <div className="flex flex-col max-md:hidden">
+                  <span className="text-xs font-medium text-slate-200 leading-tight">{user.name}</span>
+                  <span className={`text-[10px] font-semibold uppercase tracking-wider leading-tight ${user.role === 'admin' ? 'text-cyan-400' : 'text-slate-500'}`}>
+                    {user.role}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={onLogout}
+                className="px-3 py-1.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-slate-400 text-xs font-medium transition-all hover:bg-white/[0.1] hover:text-slate-100 hover:border-white/[0.15]"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={onLoginClick}
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-cyan-500 text-white text-sm font-semibold shadow-[0_2px_10px_rgba(139,92,246,0.3)] transition-all hover:shadow-[0_4px_20px_rgba(139,92,246,0.3)] hover:-translate-y-0.5 active:translate-y-0"
+            >
+              Sign In
+            </button>
+          )}
         </div>
       </div>
 

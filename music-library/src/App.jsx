@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider, useAuth } from './auth/AuthContext';
 import Header from './components/Header';
 import SongCard from './components/SongCard';
 import SongGroup from './components/SongGroup';
@@ -7,6 +8,7 @@ import Toolbar from './components/Toolbar';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import ErrorState from './components/ErrorState';
 import AddSongForm from './components/AddSongForm';
+import LoginForm from './components/LoginForm';
 import { useSongsQuery } from './hooks/useSongsQuery';
 import { useLocalSongsQuery } from './hooks/useLocalSongsQuery';
 import { useDeleteSong } from './hooks/useDeleteSong';
@@ -15,41 +17,30 @@ import { useSongFilters } from './hooks/useSongFilters';
 const queryClient = new QueryClient();
 
 function MusicLibraryContent() {
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [submittedTerm, setSubmittedTerm] = useState('coldplay');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
-  // Fetch songs from iTunes + local MSW endpoint
   const { songs: itunesSongs, isLoading, isFetching, isError, error, refetch } = useSongsQuery(submittedTerm);
   const { localSongs } = useLocalSongsQuery();
   const deleteSongMutation = useDeleteSong();
 
-  // Merge iTunes results + locally-added songs into a single list
   const allSongs = [...localSongs, ...itunesSongs];
 
-  // Client-side filter, sort, and group-by
   const {
-    processedSongs,
-    groupedSongs,
-    filteredCount,
-    filterText,
-    setFilterText,
-    sortKey,
-    setSortKey,
-    sortDir,
-    setSortDir,
-    groupKey,
-    setGroupKey,
+    processedSongs, groupedSongs, filteredCount,
+    filterText, setFilterText,
+    sortKey, setSortKey, sortDir, setSortDir,
+    groupKey, setGroupKey,
   } = useSongFilters(allSongs);
 
-  // Debounced search
   const [debounceTimer, setDebounceTimer] = useState(null);
   const handleSearchChange = useCallback((value) => {
     setSearchTerm(value);
     if (debounceTimer) clearTimeout(debounceTimer);
-    const timer = setTimeout(() => {
-      setSubmittedTerm(value);
-    }, 600);
+    const timer = setTimeout(() => setSubmittedTerm(value), 600);
     setDebounceTimer(timer);
   }, [debounceTimer]);
 
@@ -57,28 +48,31 @@ function MusicLibraryContent() {
     deleteSongMutation.mutate(songId);
   };
 
-  // canDelete is true for now — will be gated by admin role in Stage 5
-  const canDelete = true;
+  // Only admins can add/delete songs
+  const canAdd = isAdmin;
+  const canDelete = isAdmin;
+
+  const handleAddClick = () => {
+    if (!isAuthenticated) {
+      setShowLoginForm(true); // prompt login first
+    } else if (!isAdmin) {
+      // viewer role — show a hint (handled inline)
+    } else {
+      setShowAddForm(true);
+    }
+  };
 
   const renderSongList = () => {
     if (groupedSongs) {
-      const entries = Object.entries(groupedSongs);
       return (
         <div>
-          {entries.map(([label, groupSongs], index) => (
-            <SongGroup
-              key={label}
-              label={label}
-              songs={groupSongs}
-              index={index}
-              onDelete={handleDeleteSong}
-              canDelete={canDelete}
-            />
+          {Object.entries(groupedSongs).map(([label, groupSongs], index) => (
+            <SongGroup key={label} label={label} songs={groupSongs} index={index}
+              onDelete={handleDeleteSong} canDelete={canDelete} />
           ))}
         </div>
       );
     }
-
     return (
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5 stagger-children max-md:grid-cols-1">
         {processedSongs.map((song) => (
@@ -94,6 +88,9 @@ function MusicLibraryContent() {
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         isFetching={isFetching}
+        user={user}
+        onLoginClick={() => setShowLoginForm(true)}
+        onLogout={logout}
       />
 
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 pb-16 pt-6 max-md:px-4 max-md:pb-12">
@@ -124,10 +121,15 @@ function MusicLibraryContent() {
                 Refreshing
               </span>
             )}
-            {/* Add Song button — will be gated by admin role in Stage 5 */}
+            {/* Add Song — admin only, login prompt for unauthenticated */}
             <button
-              onClick={() => setShowAddForm(true)}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-cyan-500 text-white text-sm font-semibold shadow-[0_2px_10px_rgba(139,92,246,0.3)] transition-all hover:shadow-[0_4px_20px_rgba(139,92,246,0.3)] hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-1.5"
+              onClick={handleAddClick}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                canAdd
+                  ? 'bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-[0_2px_10px_rgba(139,92,246,0.3)] hover:shadow-[0_4px_20px_rgba(139,92,246,0.3)] hover:-translate-y-0.5 active:translate-y-0'
+                  : 'bg-white/[0.06] border border-white/[0.08] text-slate-400 hover:bg-white/[0.1] hover:text-slate-200'
+              }`}
+              title={!isAuthenticated ? 'Sign in to add songs' : !isAdmin ? 'Admin access required' : 'Add a new song'}
             >
               <span className="text-base leading-none">+</span>
               Add Song
@@ -135,31 +137,26 @@ function MusicLibraryContent() {
           </div>
         </div>
 
+        {/* Role hint for viewers */}
+        {isAuthenticated && !isAdmin && (
+          <div className="mb-4 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs text-slate-500 animate-fade-in">
+            👋 You&apos;re signed in as a <span className="text-slate-300 font-medium">viewer</span>. Sign in as <span className="text-cyan-400 font-medium">admin</span> to add or remove songs.
+          </div>
+        )}
+
         {/* Toolbar */}
         {!isLoading && !isError && allSongs.length > 0 && (
           <Toolbar
-            filterText={filterText}
-            onFilterChange={setFilterText}
-            sortKey={sortKey}
-            onSortKeyChange={setSortKey}
-            sortDir={sortDir}
-            onSortDirChange={setSortDir}
-            groupKey={groupKey}
-            onGroupKeyChange={setGroupKey}
-            totalCount={allSongs.length}
-            filteredCount={filteredCount}
+            filterText={filterText} onFilterChange={setFilterText}
+            sortKey={sortKey} onSortKeyChange={setSortKey}
+            sortDir={sortDir} onSortDirChange={setSortDir}
+            groupKey={groupKey} onGroupKeyChange={setGroupKey}
+            totalCount={allSongs.length} filteredCount={filteredCount}
           />
         )}
 
-        {/* Loading */}
         {isLoading && <LoadingSkeleton count={6} />}
-
-        {/* Error */}
-        {isError && !isLoading && (
-          <ErrorState error={error} onRetry={refetch} />
-        )}
-
-        {/* Song List */}
+        {isError && !isLoading && <ErrorState error={error} onRetry={refetch} />}
         {!isLoading && !isError && processedSongs.length > 0 && renderSongList()}
 
         {/* No filter matches */}
@@ -168,7 +165,7 @@ function MusicLibraryContent() {
             <div className="text-5xl leading-none mb-2">🔍</div>
             <h2 className="text-xl font-semibold text-slate-100">No matches</h2>
             <p className="text-sm text-slate-400 max-w-[400px] leading-relaxed">
-              No songs match your filter &quot;{filterText}&quot;. Try broadening your search.
+              No songs match your filter &quot;{filterText}&quot;.
             </p>
           </div>
         )}
@@ -176,9 +173,7 @@ function MusicLibraryContent() {
         {/* No API results */}
         {!isLoading && !isError && allSongs.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-4 py-16 px-8 text-center animate-fade-in">
-            <div className="text-5xl leading-none mb-2">
-              {submittedTerm ? '🔍' : '🎵'}
-            </div>
+            <div className="text-5xl leading-none mb-2">{submittedTerm ? '🔍' : '🎵'}</div>
             <h2 className="text-xl font-semibold text-slate-100">
               {submittedTerm ? 'No songs found' : 'Discover Music'}
             </h2>
@@ -191,8 +186,9 @@ function MusicLibraryContent() {
         )}
       </main>
 
-      {/* Add Song Modal */}
+      {/* Modals */}
       <AddSongForm isOpen={showAddForm} onClose={() => setShowAddForm(false)} />
+      <LoginForm isOpen={showLoginForm} onClose={() => setShowLoginForm(false)} />
     </div>
   );
 }
@@ -200,7 +196,9 @@ function MusicLibraryContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <MusicLibraryContent />
+      <AuthProvider>
+        <MusicLibraryContent />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
