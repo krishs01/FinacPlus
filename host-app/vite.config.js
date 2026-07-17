@@ -1,19 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
 import federation from '@originjs/vite-plugin-federation';
 
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss(),
     federation({
-      name: 'music_library',
-      filename: 'remoteEntry.js',
-      exposes: {
-        './MusicLibraryWidget': './src/MusicLibraryWidget.jsx',
+      name: 'host_app',
+      remotes: {
+        music_library: 'http://localhost:5173/assets/remoteEntry.js',
       },
-      shared: ['react', 'react-dom', '@tanstack/react-query'],
+      shared: ['react', 'react-dom'],
     }),
   ],
   build: {
@@ -23,12 +20,11 @@ export default defineConfig({
     cssCodeSplit: false,
   },
   server: {
-    port: 5173,
+    port: 5174,
     strictPort: true,
   },
   preview: {
-    port: 5173,
+    port: 5174,
     strictPort: true,
-    cors: true,
   },
 });
