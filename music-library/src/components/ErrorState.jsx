@@ -17,7 +17,7 @@ function ErrorState({ error, onRetry }) {
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-violet-500 to-cyan-500 text-white text-sm font-semibold shadow-[0_2px_10px_rgba(139,92,246,0.3)] transition-all duration-150 hover:shadow-[0_4px_20px_rgba(139,92,246,0.3)] hover:-translate-y-0.5 active:translate-y-0"
+          className="mt-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-sky-400 text-white text-sm font-semibold shadow-[0_2px_10px_rgba(79, 70, 229,0.3)] transition-all duration-150 hover:shadow-[0_4px_20px_rgba(79, 70, 229,0.3)] hover:-translate-y-0.5 active:translate-y-0"
         >
           Try Again
         </button>

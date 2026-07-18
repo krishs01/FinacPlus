@@ -29,7 +29,7 @@ function Toolbar({
         <input
           id="filter-input"
           type="text"
-          className="w-full py-2 pl-9 pr-3 rounded-lg bg-white/[0.06] border border-white/[0.08] text-slate-100 text-sm outline-none transition-all duration-150 placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-violet-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.2)]"
+          className="w-full py-2 pl-9 pr-3 rounded-lg bg-white/[0.06] border border-white/[0.08] text-slate-100 text-sm outline-none transition-all duration-150 placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-indigo-600 focus:shadow-[0_0_0_3px_rgba(79, 70, 229,0.2)]"
           placeholder="Filter results..."
           value={filterText}
           onChange={(e) => onFilterChange(e.target.value)}
@@ -54,12 +54,12 @@ function Toolbar({
           id="sort-select"
           value={sortKey}
           onChange={(e) => onSortKeyChange(e.target.value)}
-          className="py-2 px-3 rounded-lg bg-white/[0.06] border border-white/[0.08] text-slate-200 text-sm outline-none cursor-pointer transition-all duration-150 focus:border-violet-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.2)] appearance-none"
+          className="py-2 px-3 rounded-lg bg-[#1E293B] border border-white/[0.08] text-slate-200 text-sm outline-none cursor-pointer transition-all duration-150 focus:border-indigo-600 focus:shadow-[0_0_0_3px_rgba(79,70,229,0.2)]"
         >
-          <option value="title">Title</option>
-          <option value="artist">Artist</option>
-          <option value="album">Album</option>
-          <option value="year">Year</option>
+          <option value="title" className="bg-[#1E293B] text-slate-200">Title</option>
+          <option value="artist" className="bg-[#1E293B] text-slate-200">Artist</option>
+          <option value="album" className="bg-[#1E293B] text-slate-200">Album</option>
+          <option value="year" className="bg-[#1E293B] text-slate-200">Year</option>
         </select>
 
         {/* Sort direction toggle */}
@@ -83,11 +83,11 @@ function Toolbar({
           id="group-select"
           value={groupKey}
           onChange={(e) => onGroupKeyChange(e.target.value)}
-          className="py-2 px-3 rounded-lg bg-white/[0.06] border border-white/[0.08] text-slate-200 text-sm outline-none cursor-pointer transition-all duration-150 focus:border-violet-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.2)] appearance-none"
+          className="py-2 px-3 rounded-lg bg-[#1E293B] border border-white/[0.08] text-slate-200 text-sm outline-none cursor-pointer transition-all duration-150 focus:border-indigo-600 focus:shadow-[0_0_0_3px_rgba(79,70,229,0.2)]"
         >
-          <option value="none">None</option>
-          <option value="album">Album</option>
-          <option value="artist">Artist</option>
+          <option value="none" className="bg-[#1E293B] text-slate-200">None</option>
+          <option value="album" className="bg-[#1E293B] text-slate-200">Album</option>
+          <option value="artist" className="bg-[#1E293B] text-slate-200">Artist</option>
         </select>
       </div>
 

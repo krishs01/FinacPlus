@@ -3,7 +3,7 @@ import SongCard from './SongCard';
 /**
  * Renders a named group of songs — a header label followed by a grid of SongCards.
  */
-function SongGroup({ label, songs, index, onDelete, canDelete }) {
+function SongGroup({ label, songs, index, onDelete, canDelete, currentlyPlaying, setCurrentlyPlaying }) {
   return (
     <section
       className="mb-8 animate-fade-in"
@@ -21,7 +21,8 @@ function SongGroup({ label, songs, index, onDelete, canDelete }) {
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5 max-md:grid-cols-1">
         {songs.map((song) => (
-          <SongCard key={song.id} song={song} onDelete={onDelete} canDelete={canDelete} />
+          <SongCard key={song.id} song={song} onDelete={onDelete} canDelete={canDelete}
+            currentlyPlaying={currentlyPlaying} setCurrentlyPlaying={setCurrentlyPlaying} />
         ))}
       </div>
     </section>

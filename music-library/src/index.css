@@ -2,26 +2,27 @@
 
 /* ============================================
    Tailwind v4 Theme Configuration
+   Midnight Indigo — "Apple Music at night"
    ============================================ */
 @theme {
   --font-family-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-  /* Custom colors */
-  --color-surface: #0a0a0f;
-  --color-surface-secondary: #12121a;
-  --color-surface-tertiary: #1a1a2e;
+  /* Midnight Indigo palette */
+  --color-surface: #0F172A;
+  --color-surface-secondary: #1E293B;
+  --color-surface-tertiary: #273548;
   --color-surface-card: rgba(255, 255, 255, 0.04);
   --color-surface-card-hover: rgba(255, 255, 255, 0.08);
   --color-surface-glass: rgba(255, 255, 255, 0.06);
 
-  --color-accent: #8b5cf6;
-  --color-accent-hover: #7c3aed;
-  --color-accent-secondary: #06b6d4;
-  --color-accent-glow: rgba(139, 92, 246, 0.3);
+  --color-accent: #4F46E5;
+  --color-accent-hover: #4338CA;
+  --color-accent-secondary: #38BDF8;
+  --color-accent-glow: rgba(79, 70, 229, 0.3);
 
   --color-border-subtle: rgba(255, 255, 255, 0.08);
   --color-border-hover: rgba(255, 255, 255, 0.15);
-  --color-border-accent: rgba(139, 92, 246, 0.4);
+  --color-border-accent: rgba(79, 70, 229, 0.4);
 
   /* Animation */
   --animate-float-orb: float-orb 20s ease-in-out infinite;
@@ -56,8 +57,23 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.1); }
-  50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.25); }
+  0%, 100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.1); }
+  50% { box-shadow: 0 0 30px rgba(79, 70, 229, 0.25); }
+}
+
+@keyframes equalizer1 {
+  0%, 100% { height: 4px; }
+  50% { height: 20px; }
+}
+
+@keyframes equalizer2 {
+  0%, 100% { height: 16px; }
+  50% { height: 6px; }
+}
+
+@keyframes equalizer3 {
+  0%, 100% { height: 8px; }
+  50% { height: 18px; }
 }
 
 /* ============================================
@@ -83,7 +99,7 @@ body::after {
 body::before {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.25), transparent 70%);
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.25), transparent 70%);
   top: -200px;
   right: -100px;
   animation: var(--animate-float-orb);
@@ -92,7 +108,7 @@ body::before {
 body::after {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.2), transparent 70%);
   bottom: -150px;
   left: -100px;
   animation: float-orb 25s ease-in-out infinite reverse;

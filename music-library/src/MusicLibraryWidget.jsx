@@ -28,6 +28,7 @@ function MusicLibraryInner() {
   const [submittedTerm, setSubmittedTerm] = useState('coldplay');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
 
   const { songs: itunesSongs, isLoading, isFetching, isError, error, refetch } = useSongsQuery(submittedTerm);
   const { localSongs } = useLocalSongsQuery();
@@ -65,7 +66,8 @@ function MusicLibraryInner() {
         <div>
           {Object.entries(groupedSongs).map(([label, groupSongs], index) => (
             <SongGroup key={label} label={label} songs={groupSongs} index={index}
-              onDelete={handleDeleteSong} canDelete={canDelete} />
+              onDelete={handleDeleteSong} canDelete={canDelete}
+              currentlyPlaying={currentlyPlaying} setCurrentlyPlaying={setCurrentlyPlaying} />
           ))}
         </div>
       );
@@ -73,7 +75,8 @@ function MusicLibraryInner() {
     return (
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5 stagger-children max-md:grid-cols-1">
         {processedSongs.map((song) => (
-          <SongCard key={song.id} song={song} onDelete={handleDeleteSong} canDelete={canDelete} />
+          <SongCard key={song.id} song={song} onDelete={handleDeleteSong} canDelete={canDelete}
+            currentlyPlaying={currentlyPlaying} setCurrentlyPlaying={setCurrentlyPlaying} />
         ))}
       </div>
     );
@@ -91,7 +94,7 @@ function MusicLibraryInner() {
           </svg>
           <input
             type="text" placeholder="Search artists, albums, or songs..."
-            className="w-full py-2.5 px-4 pl-10 rounded-lg bg-white/[0.06] border border-white/[0.08] text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-violet-500"
+            className="w-full py-2.5 px-4 pl-10 rounded-lg bg-white/[0.06] border border-white/[0.08] text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-indigo-600"
             value={searchTerm} onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
@@ -108,13 +111,13 @@ function MusicLibraryInner() {
             </>
           ) : (
             <button onClick={() => setShowLoginForm(true)}
-              className="px-3 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-cyan-500 text-white text-sm font-semibold">
+              className="px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-sky-400 text-white text-sm font-semibold">
               Sign In
             </button>
           )}
           <button onClick={handleAddClick}
             className={`px-3 py-2 rounded-lg text-sm font-semibold ${canAdd
-              ? 'bg-gradient-to-r from-violet-500 to-cyan-500 text-white'
+              ? 'bg-gradient-to-r from-indigo-600 to-sky-400 text-white'
               : 'bg-white/[0.06] border border-white/[0.08] text-slate-400'}`}>
             + Add
           </button>
@@ -125,7 +128,7 @@ function MusicLibraryInner() {
       <div className="flex items-center justify-between mb-4 text-sm text-slate-400">
         <span>
           {isLoading ? 'Searching...' : `${allSongs.length} songs`}
-          {submittedTerm && !isLoading && <span className="text-violet-400 italic"> matching "{submittedTerm}"</span>}
+          {submittedTerm && !isLoading && <span className="text-indigo-400 italic"> matching "{submittedTerm}"</span>}
         </span>
         {isFetching && !isLoading && <span className="text-xs text-slate-500">Refreshing...</span>}
       </div>

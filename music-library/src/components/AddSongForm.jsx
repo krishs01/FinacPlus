@@ -31,7 +31,7 @@ function AddSongForm({ isOpen, onClose }) {
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-[#12121a] border border-white/[0.08] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up">
+      <div className="bg-[#1E293B] border border-white/[0.08] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up">
 
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4 border-b border-white/[0.06]">
@@ -60,7 +60,7 @@ function AddSongForm({ isOpen, onClose }) {
               id="song-title"
               type="text"
               placeholder="Enter song title"
-              className={`w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-violet-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.2)] ${errors.title ? 'border-red-500/50' : 'border-white/[0.08]'}`}
+              className={`w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-indigo-600 focus:shadow-[0_0_0_3px_rgba(79, 70, 229,0.2)] ${errors.title ? 'border-red-500/50' : 'border-white/[0.08]'}`}
               {...register('title', { required: 'Title is required' })}
             />
             {errors.title && (
@@ -77,7 +77,7 @@ function AddSongForm({ isOpen, onClose }) {
               id="song-artist"
               type="text"
               placeholder="Enter artist name"
-              className={`w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-violet-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.2)] ${errors.artist ? 'border-red-500/50' : 'border-white/[0.08]'}`}
+              className={`w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-indigo-600 focus:shadow-[0_0_0_3px_rgba(79, 70, 229,0.2)] ${errors.artist ? 'border-red-500/50' : 'border-white/[0.08]'}`}
               {...register('artist', { required: 'Artist is required' })}
             />
             {errors.artist && (
@@ -94,7 +94,7 @@ function AddSongForm({ isOpen, onClose }) {
               id="song-album"
               type="text"
               placeholder="Enter album name"
-              className={`w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-violet-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.2)] ${errors.album ? 'border-red-500/50' : 'border-white/[0.08]'}`}
+              className={`w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-indigo-600 focus:shadow-[0_0_0_3px_rgba(79, 70, 229,0.2)] ${errors.album ? 'border-red-500/50' : 'border-white/[0.08]'}`}
               {...register('album', { required: 'Album is required' })}
             />
             {errors.album && (
@@ -111,7 +111,7 @@ function AddSongForm({ isOpen, onClose }) {
               id="song-year"
               type="number"
               placeholder="e.g. 2024"
-              className={`w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-violet-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.2)] ${errors.year ? 'border-red-500/50' : 'border-white/[0.08]'}`}
+              className={`w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border text-slate-100 text-sm outline-none transition-all placeholder:text-slate-500 focus:bg-white/[0.1] focus:border-indigo-600 focus:shadow-[0_0_0_3px_rgba(79, 70, 229,0.2)] ${errors.year ? 'border-red-500/50' : 'border-white/[0.08]'}`}
               {...register('year', {
                 required: 'Year is required',
                 valueAsNumber: true,
@@ -148,7 +148,7 @@ function AddSongForm({ isOpen, onClose }) {
             <button
               type="submit"
               disabled={addSongMutation.isPending}
-              className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-violet-500 to-cyan-500 text-white text-sm font-semibold shadow-[0_2px_10px_rgba(139,92,246,0.3)] transition-all hover:shadow-[0_4px_20px_rgba(139,92,246,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-sky-400 text-white text-sm font-semibold shadow-[0_2px_10px_rgba(79, 70, 229,0.3)] transition-all hover:shadow-[0_4px_20px_rgba(79, 70, 229,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             >
               {addSongMutation.isPending ? (
                 <span className="inline-flex items-center gap-2">
