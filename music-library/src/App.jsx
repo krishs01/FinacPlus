@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import Header from './components/Header';
-import Sidebar from './components/Sidebar';
 import SongCard from './components/SongCard';
 import SongGroup from './components/SongGroup';
 import Toolbar from './components/Toolbar';
@@ -24,7 +23,6 @@ function MusicLibraryContent() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const { songs: itunesSongs, isLoading, isFetching, isError, error, refetch } = useSongsQuery(submittedTerm);
   const { localSongs } = useLocalSongsQuery();
@@ -39,11 +37,6 @@ function MusicLibraryContent() {
     groupKey, setGroupKey,
   } = useSongFilters(allSongs);
 
-  // Find the currently playing song object for the sidebar mini-player
-  const currentSongObj = useMemo(() => {
-    if (!currentlyPlaying) return null;
-    return allSongs.find((s) => s.id === currentlyPlaying) || null;
-  }, [currentlyPlaying, allSongs]);
 
   const [debounceTimer, setDebounceTimer] = useState(null);
   const handleSearchChange = useCallback((value) => {
@@ -70,8 +63,6 @@ function MusicLibraryContent() {
     }
   };
 
-  // Sidebar width for layout offset
-  const sidebarWidth = sidebarCollapsed ? 68 : 220;
 
   const renderSongList = () => {
     if (groupedSongs) {
@@ -96,22 +87,8 @@ function MusicLibraryContent() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <Sidebar
-        currentSong={currentSongObj}
-        isPlaying={!!currentlyPlaying}
-        onTogglePlay={() => setCurrentlyPlaying(currentlyPlaying ? null : currentlyPlaying)}
-        progress={0}
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-      />
-
-      {/* Main area — offset by sidebar width */}
-      <div
-        className="flex flex-col flex-1 min-h-screen transition-all duration-300 max-md:!ml-0"
-        style={{ marginLeft: sidebarWidth }}
-      >
+    <div className="min-h-screen">
+      <div className="flex flex-col min-h-screen transition-all duration-300">
         <Header
           searchTerm={searchTerm}
           onSearchChange={handleSearchChange}
@@ -151,11 +128,10 @@ function MusicLibraryContent() {
               )}
               <button
                 onClick={handleAddClick}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
-                  canAdd
-                    ? 'bg-gradient-to-r from-indigo-600 to-sky-400 text-white shadow-[0_2px_10px_rgba(79,70,229,0.3)] hover:shadow-[0_4px_20px_rgba(79,70,229,0.3)] hover:-translate-y-0.5 active:translate-y-0'
-                    : 'bg-white/[0.06] border border-white/[0.08] text-slate-400 hover:bg-white/[0.1] hover:text-slate-200'
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${canAdd
+                  ? 'bg-gradient-to-r from-indigo-600 to-sky-400 text-white shadow-[0_2px_10px_rgba(79,70,229,0.3)] hover:shadow-[0_4px_20px_rgba(79,70,229,0.3)] hover:-translate-y-0.5 active:translate-y-0'
+                  : 'bg-white/[0.06] border border-white/[0.08] text-slate-400 hover:bg-white/[0.1] hover:text-slate-200'
+                  }`}
                 title={!isAuthenticated ? 'Sign in to add songs' : !isAdmin ? 'Admin access required' : 'Add a new song'}
               >
                 <span className="text-base leading-none">+</span>
