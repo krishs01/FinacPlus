@@ -12,6 +12,7 @@ import { useSongsQuery } from './hooks/useSongsQuery';
 import { useLocalSongsQuery } from './hooks/useLocalSongsQuery';
 import { useDeleteSong } from './hooks/useDeleteSong';
 import { useSongFilters } from './hooks/useSongFilters';
+import './index.css';
 
 const queryClient = new QueryClient();
 

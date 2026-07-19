@@ -1,17 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
+import { getLocalSongs } from '../api/localStore';
 
 /**
- * Fetches locally-added songs from the MSW mock endpoint.
- * These are songs the user added via the "Add Song" form.
+ * Fetches locally-added songs from localStorage instead of MSW.
+ * This ensures it works seamlessly when loaded as a Micro Frontend on Vercel.
  */
 export function useLocalSongsQuery() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['songs', 'local'],
-    queryFn: async () => {
-      const response = await fetch('/songs');
-      if (!response.ok) throw new Error('Failed to fetch local songs');
-      return response.json();
-    },
+    queryFn: getLocalSongs,
     staleTime: 0,  // always refetch — local data changes often
   });
 
