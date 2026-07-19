@@ -5,7 +5,7 @@
  * We map them to a cleaner shape our UI expects: { id, title, artist, album, year, artwork, preview }.
  */
 
-const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search';
+const ITUNES_SEARCH_URL = '/api/itunes/search';
 
 /**
  * Maps a single raw iTunes track object to our app's Song model.

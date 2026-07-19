@@ -25,6 +25,13 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    proxy: {
+      '/api/itunes': {
+        target: 'https://itunes.apple.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/itunes/, ''),
+      },
+    },
   },
   preview: {
     port: 5173,
