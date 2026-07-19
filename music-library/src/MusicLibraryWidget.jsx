@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import SongCard from './components/SongCard';
@@ -12,7 +12,7 @@ import { useSongsQuery } from './hooks/useSongsQuery';
 import { useLocalSongsQuery } from './hooks/useLocalSongsQuery';
 import { useDeleteSong } from './hooks/useDeleteSong';
 import { useSongFilters } from './hooks/useSongFilters';
-import './index.css';
+import styles from './index.css?inline';
 
 const queryClient = new QueryClient();
 
@@ -164,6 +164,14 @@ function MusicLibraryInner() {
  * Exported widget — wraps providers so it works independently when loaded remotely.
  */
 function MusicLibraryWidget() {
+  useEffect(() => {
+    const styleEl = document.createElement('style');
+    styleEl.setAttribute('data-source', 'music-library-widget');
+    styleEl.textContent = styles;
+    document.head.appendChild(styleEl);
+    return () => styleEl.remove();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
